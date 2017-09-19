@@ -5,7 +5,12 @@
 
 #include "example.h"
 
+#include <log4z/log4z.h>
+using namespace zsummer::log4z;
+
 int main(int argc, char ** argv) {
+
+	ILog4zManager::getInstance()->start();
 
 	std::string s(argv[1]);
 

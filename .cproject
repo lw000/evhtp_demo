@@ -48,6 +48,7 @@
 								<option id="gnu.cpp.link.option.paths.764606127" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false"/>
 								<option id="gnu.cpp.link.option.userobjs.540673723" name="Other objects" superClass="gnu.cpp.link.option.userobjs" useByScannerDiscovery="false" valueType="userObjs">
 									<listOptionValue builtIn="false" value="/usr/local/lib/libevhtp.a"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib/liblog4z.a"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib/libevent_pthreads.a"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib/libevent.a"/>
 								</option>

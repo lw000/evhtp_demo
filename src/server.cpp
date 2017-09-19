@@ -2,10 +2,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include <string>
 #include <evhtp/evhtp.h>
-
-#include "evhtp-internal.h"
 
 void testcb(evhtp_request_t * req, void * a) {
 	const char* data = "{\"d\":\"ok\"}";
@@ -44,10 +43,10 @@ int server_main(int argc, char ** argv) {
 	htp = evhtp_new(evbase, NULL);
 
 	cb_1 = evhtp_set_cb(htp, "/test", testcb, NULL);
-	evhtp_assert(cb_1 != NULL);
+	assert(cb_1 != NULL);
 
 	cb_2 = evhtp_set_cb(htp, "/add", addcb, NULL);
-	evhtp_assert(cb_2 != NULL);
+	assert(cb_2 != NULL);
 
 	int r = evhtp_bind_socket(htp, "0.0.0.0", 8080, 1024);
 	if (r != 0) {
