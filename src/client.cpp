@@ -20,30 +20,32 @@
 #include <log4z/log4z.h>
 using namespace zsummer::log4z;
 
-static void request_cb(evhtp_request_t * req, void * arg) {
-	LOGFMTA("hi %d\n", evbuffer_get_length(req->buffer_in));
-
+static void add_cb(evhtp_request_t * req, void * arg) {
+	char buf[1024];
+	struct evbuffer *evbuf = req->buffer_in;
+	ev_ssize_t len = evbuffer_get_length(evbuf);
+	memcpy(buf, evbuffer_pullup(evbuf, len), len);
+	buf[len] = '\0';
+	LOGFMTA("%s", buf);
+	evbuffer_drain(evbuf, len);
 }
 
 int client_main(int argc, char ** argv) {
+
 	evhtp_connection_t * conn;
 	evhtp_request_t * request;
 	evbase_t * evbase;
 
 	evbase = event_base_new();
 
-	clock_t t = clock();
-	for (int i = 0; i < 1000; i++) {
+	{
 		conn = evhtp_connection_new(evbase, "192.168.204.128", 8080);
-		request = evhtp_request_new(request_cb, evbase);
-		evhtp_make_request(conn, request, htp_method_GET, "/test");
+		request = evhtp_request_new(add_cb, evbase);
+		evhtp_make_request(conn, request, htp_method_GET,
+				"/add?a=111&b=222&c=333");
 	}
 
-	clock_t t1 = clock();
-	LOGFMTA("all exec times: %f", ((double) t1 - t) / CLOCKS_PER_SEC);
-
 	event_base_dispatch(evbase);
-
 	event_base_free(evbase);
 
 	return 0;
