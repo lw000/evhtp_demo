@@ -4,94 +4,87 @@
 #include <string.h>
 #include <assert.h>
 #include <string>
+#include <fstream>
+
 #include <evhtp/evhtp.h>
 
 #include <log4z/log4z.h>
 using namespace zsummer::log4z;
 
-/* evhtp_kvs_iterator */
-int kvs_print(evhtp_kv_t * kvobj, void * arg) {
-	int * key_idx = (int *) arg;
+#include "data.h"
+#include "bunissfunc.h"
 
-//	if (*key_idx) {
-//		printf(", ");
-//	}
+#include "rapidjson/rapidjson.h"
+#include "rapidjson/document.h"
+#include "rapidjson/reader.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/filestream.h"
 
-	LOGFMTA("\"%s\": %s", kvobj->key, kvobj->val);
+using namespace rapidjson;
 
-	*key_idx += 1;
+bool load_config() {
 
-	return 0;
+	FILE *f;
+	f = fopen("./config.cfg", "r");
+	fseek(f, 0, SEEK_SET);
+
+	Document root;
+	FileStream inputStream(f);
+	root.ParseStream<0>(inputStream);
+	if (root.HasParseError()) {
+		LOGE("fail parse json.");
+		return -1;
+	}
+
+	if (!root.IsArray()) {
+		LOGE("json is not object array.");
+		return -1;
+	}
+
+	if (root.Empty()) {
+		LOGE("json is empty.");
+		return -1;
+	}
+
+	for (rapidjson::SizeType i = 0; i < root.Size(); i++) {
+		User user;
+		user.uid = root[i]["uid"].GetString();
+		user.uname = root[i]["uname"].GetString();
+		user.psd = root[i]["psd"].GetString();
+		users.insert(std::make_pair(user.uid, user));
+	}
+
+	fclose(f);
+
+	return true;
 }
 
-void testcb(evhtp_request_t * req, void * args) {
-//	const char* data = "{\"d\":\"ok\"}";
-//	evbuffer_add_reference(req->buffer_out, data, strlen(data), NULL, NULL);
-//	evhtp_send_reply(req, EVHTP_RES_OK);
-
-	struct evbuffer * b = evbuffer_new();
-	evhtp_send_reply_start(req, EVHTP_RES_OK);
-
-	evbuffer_add(b, "foo", 3);
-	evhtp_send_reply_body(req, b);
-	evbuffer_add(b, "bar", 3);
-	evhtp_send_reply_body(req, b);
-	evhtp_send_reply_end(req);
-	evbuffer_free(b);
+void thread_init_cb(evhtp_t * htp, evthr_t * thr, void * arg) {
+	LOGD("thread_init_cb");
 }
 
-void vh_testcb(evhtp_request_t * req, void * args) {
-	const char* data = "{\"d\":\"ok\"}";
-	evbuffer_add_reference(req->buffer_out, data, strlen(data), NULL, NULL);
-	evhtp_send_reply(req, EVHTP_RES_OK);
-}
-
-void addcb(evhtp_request_t * req, void * args) {
-	if (evhtp_request_get_method(req) != htp_method_GET) {
-		evhtp_send_reply(req, EVHTP_RES_NOTFOUND);
-		return;
-	}
-
-	int key_idx = 0;
-	char* raw_query = (char*) req->uri->query_raw;
-	evhtp_query_t * query;
-	query = evhtp_parse_query_wflags(raw_query, strlen(raw_query), 0);
-	const char* a1 = evhtp_kv_find(query, "a");
-	const char* b1 = evhtp_kv_find(query, "b");
-	const char* c1 = evhtp_kv_find(query, "c");
-
-	int a = 0;
-	int b = 0;
-	int c = 0;
-	if (a1 != NULL) {
-		a = atoi(a1);
-	}
-
-	if (b1 != NULL) {
-		b = atoi(b1);
-	}
-
-	if (c1 != NULL) {
-		c = atoi(c1);
-	}
-
-	evhtp_kvs_for_each(query, kvs_print, &key_idx);
-
-	evbuffer_add_printf(req->buffer_out, "%d", a + b + c);
-	evhtp_send_reply(req, EVHTP_RES_OK);
+void thread_init_exit(evhtp_t * htp, evthr_t * thr, void * arg) {
+	LOGD("thread_init_exit");
 }
 
 int server_main(int argc, char ** argv) {
+	if (!load_config()) {
+		return -1;
+	}
+
 	evbase_t * evbase = NULL;
 	evhtp_t * htp = NULL;
 
 	evhtp_callback_t * cb_1 = NULL;
 	evhtp_callback_t * cb_2 = NULL;
+	evhtp_callback_t * cb_3 = NULL;
 
 	srand((unsigned) time(NULL));
 
 	evbase = event_base_new();
 	htp = evhtp_new(evbase, NULL);
+	evhtp_use_threads_wexit(htp, thread_init_cb, thread_init_exit, 6, NULL);
 
 //	evhtp_t * v1 = evhtp_new(evbase, NULL);
 //	const char* vhost = "host1.com";
@@ -99,23 +92,27 @@ int server_main(int argc, char ** argv) {
 //	evhtp_set_cb(v1, path, vh_testcb, (void*)vhost);
 //	evhtp_add_vhost(htp, vhost, v1);
 
-	cb_1 = evhtp_set_cb(htp, "/test", testcb, NULL);
+	cb_1 = evhtp_set_cb(htp, "/login", logincb, NULL);
 	assert(cb_1 != NULL);
 
-	cb_2 = evhtp_set_cb(htp, "/add", addcb, NULL);
+	cb_2 = evhtp_set_cb(htp, "/test", testcb, NULL);
 	assert(cb_2 != NULL);
 
-	int r = evhtp_bind_socket(htp, "0.0.0.0", 8080, 1024);
+	cb_3 = evhtp_set_cb(htp, "/add", addcb, NULL);
+	assert(cb_3 != NULL);
+
+	int r = evhtp_bind_socket(htp, "0.0.0.0", 8006, 1024);
 	if (r != 0) {
 
 	}
 
-	printf("http server running [%d]\n", 8080);
+	LOGD("running [port : " << 8006 << "]");
 
 	r = event_base_dispatch(evbase);
 	if (r != 0) {
 
 	}
+
 	evhtp_unbind_socket(htp);
 
 	event_base_free(evbase);

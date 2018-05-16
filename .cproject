@@ -29,6 +29,8 @@
 									<listOptionValue builtIn="false" value="/usr/local/include/evhtp"/>
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.8.5"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/evhtp_demo/json}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/evhtp_demo/iconv/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1593096336" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -39,6 +41,8 @@
 									<listOptionValue builtIn="false" value="/usr/local/include/evhtp"/>
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.8.5"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/evhtp_demo/json}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/evhtp_demo/iconv/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1503456054" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -48,6 +52,7 @@
 								<option id="gnu.cpp.link.option.paths.764606127" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false"/>
 								<option id="gnu.cpp.link.option.userobjs.540673723" name="Other objects" superClass="gnu.cpp.link.option.userobjs" useByScannerDiscovery="false" valueType="userObjs">
 									<listOptionValue builtIn="false" value="/usr/local/lib/libevhtp.a"/>
+									<listOptionValue builtIn="false" value="/usr/lib64/libcurl.so.4"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib/liblog4z.a"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib/libevent_pthreads.a"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib/libevent.a"/>
