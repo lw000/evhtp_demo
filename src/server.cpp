@@ -13,6 +13,7 @@ using namespace zsummer::log4z;
 
 #include "data.h"
 #include "bunissfunc.h"
+#include "LWFastSyncRedis.h"
 
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
@@ -68,23 +69,19 @@ void thread_init_exit(evhtp_t * htp, evthr_t * thr, void * arg) {
 	LOGD("thread_init_exit");
 }
 
-int server_main(int argc, char ** argv) {
+int main_server(int argc, char ** argv) {
 	if (!load_config()) {
 		return -1;
 	}
 
+	srand((unsigned) time(NULL));
+
 	evbase_t * evbase = NULL;
 	evhtp_t * htp = NULL;
 
-	evhtp_callback_t * cb_1 = NULL;
-	evhtp_callback_t * cb_2 = NULL;
-	evhtp_callback_t * cb_3 = NULL;
-
-	srand((unsigned) time(NULL));
-
 	evbase = event_base_new();
 	htp = evhtp_new(evbase, NULL);
-	evhtp_use_threads_wexit(htp, thread_init_cb, thread_init_exit, 6, NULL);
+	evhtp_use_threads_wexit(htp, thread_init_cb, thread_init_exit, 4, NULL);
 
 //	evhtp_t * v1 = evhtp_new(evbase, NULL);
 //	const char* vhost = "host1.com";
@@ -92,19 +89,29 @@ int server_main(int argc, char ** argv) {
 //	evhtp_set_cb(v1, path, vh_testcb, (void*)vhost);
 //	evhtp_add_vhost(htp, vhost, v1);
 
-	cb_1 = evhtp_set_cb(htp, "/login", logincb, NULL);
+	evhtp_callback_t * cb_1 = NULL;
+	evhtp_callback_t * cb_2 = NULL;
+	evhtp_callback_t * cb_3 = NULL;
+	evhtp_callback_t * cb_4 = NULL;
+
+	cb_1 = evhtp_set_cb(htp, "/register", registercb, NULL);
 	assert(cb_1 != NULL);
 
-	cb_2 = evhtp_set_cb(htp, "/test", testcb, NULL);
+	cb_2 = evhtp_set_cb(htp, "/login", logincb, NULL);
 	assert(cb_2 != NULL);
 
-	cb_3 = evhtp_set_cb(htp, "/add", addcb, NULL);
+	cb_3 = evhtp_set_cb(htp, "/test", testcb, NULL);
 	assert(cb_3 != NULL);
+
+	cb_4 = evhtp_set_cb(htp, "/add", addcb, NULL);
+	assert(cb_4 != NULL);
 
 	int r = evhtp_bind_socket(htp, "0.0.0.0", 8006, 1024);
 	if (r != 0) {
 
 	}
+
+	syncRedis.connect("192.168.204.128", 6379);
 
 	LOGD("running [port : " << 8006 << "]");
 

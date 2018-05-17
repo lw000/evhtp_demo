@@ -30,7 +30,7 @@ static void add_cb(evhtp_request_t * req, void * arg) {
 	evbuffer_drain(evbuf, len);
 }
 
-int client_main(int argc, char ** argv) {
+int main_client(int argc, char ** argv) {
 
 	evhtp_connection_t * conn;
 	evhtp_request_t * request;

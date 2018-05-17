@@ -9,9 +9,7 @@
 #define EXAMPLE_H_
 
 
-int server_main(int argc, char ** argv);
-int client_main(int argc, char ** argv);
-
-
+int main_server(int argc, char ** argv);
+int main_client(int argc, char ** argv);
 
 #endif /* EXAMPLE_H_ */
