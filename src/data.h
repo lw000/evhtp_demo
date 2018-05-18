@@ -50,7 +50,7 @@ public:
 };
 
 extern UserMgr usermgr;
-extern std::unordered_map<std::string, User> __g_users;
+extern std::unordered_map<std::string, User> g_users;
 
 
 #endif	//__data_h__

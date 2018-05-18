@@ -204,8 +204,8 @@ void logincb(evhtp_request_t * req, void * args) {
 	std::string username = evhtp_kv_find(query, "username");
 	std::string password = evhtp_kv_find(query, "password");
 
-	auto v = __g_users.find(userid);
-	if (v == __g_users.end()) {
+	auto v = g_users.find(userid);
+	if (v == g_users.end()) {
 		rapidjson::Document doc;
 		doc.SetObject();
 		rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();

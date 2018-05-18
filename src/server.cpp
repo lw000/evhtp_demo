@@ -53,7 +53,7 @@ bool load_config() {
 			user.uid = root[i]["uid"].GetString();
 			user.uname = root[i]["uname"].GetString();
 			user.psd = root[i]["psd"].GetString();
-			__g_users.insert(std::make_pair(user.uid, user));
+			g_users.insert(std::make_pair(user.uid, user));
 		}
 	} while (0);
 

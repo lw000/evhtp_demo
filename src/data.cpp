@@ -11,7 +11,7 @@
 
 UserMgr usermgr;
 
-std::unordered_map<std::string, User> __g_users;
+std::unordered_map<std::string, User> g_users;
 
 User::User() {
 	status = -1;
