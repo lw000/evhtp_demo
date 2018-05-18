@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <mutex>
 
 struct User {
 	std::string uid;
@@ -19,11 +20,37 @@ public:
 public:
 	std::string Serializable();
 	void UnSerializable(const std::string& json);
+
+public:
+	bool operator ==(const User& user);
 };
 
-extern std::vector<User> users_table;
+class UserMgr {
+private:
+	std::mutex m;
 
-extern std::unordered_map<std::string, User> users;
+private:
+	std::vector<User> users;
+
+public:
+	UserMgr();
+
+public:
+	int add(const User& user);
+	int modify(const User& user);
+	int remove(const User& user);
+	int removeWithUid(const std::string& uid);
+	int removeWithUname(const std::string& uname);
+	User find(const User& user);
+	User findWithUid(const std::string& uid);
+	User findWithUname(const std::string& uname);
+
+	bool exist(const std::string& uid);
+	bool existWithUname(const std::string& uname);
+};
+
+extern UserMgr usermgr;
+extern std::unordered_map<std::string, User> __g_users;
 
 
 #endif	//__data_h__

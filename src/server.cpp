@@ -25,48 +25,56 @@ using namespace zsummer::log4z;
 using namespace rapidjson;
 
 bool load_config() {
+	FILE *f = NULL;
+	do {
+		f = fopen("./config.cfg", "r");
+		fseek(f, 0, SEEK_SET);
 
-	FILE *f;
-	f = fopen("./config.cfg", "r");
-	fseek(f, 0, SEEK_SET);
+		Document root;
+		FileStream inputStream(f);
+		root.ParseStream<0>(inputStream);
+		if (root.HasParseError()) {
+			LOGE("fail parse json.");
+			break;
+		}
 
-	Document root;
-	FileStream inputStream(f);
-	root.ParseStream<0>(inputStream);
-	if (root.HasParseError()) {
-		LOGE("fail parse json.");
-		return -1;
-	}
+		if (!root.IsArray()) {
+			LOGE("json is not object array.");
+			break;
+		}
 
-	if (!root.IsArray()) {
-		LOGE("json is not object array.");
-		return -1;
-	}
+		if (root.Empty()) {
+			LOGE("json is empty.");
+			break;
+		}
 
-	if (root.Empty()) {
-		LOGE("json is empty.");
-		return -1;
-	}
-
-	for (rapidjson::SizeType i = 0; i < root.Size(); i++) {
-		User user;
-		user.uid = root[i]["uid"].GetString();
-		user.uname = root[i]["uname"].GetString();
-		user.psd = root[i]["psd"].GetString();
-		users.insert(std::make_pair(user.uid, user));
-	}
+		for (rapidjson::SizeType i = 0; i < root.Size(); i++) {
+			User user;
+			user.uid = root[i]["uid"].GetString();
+			user.uname = root[i]["uname"].GetString();
+			user.psd = root[i]["psd"].GetString();
+			__g_users.insert(std::make_pair(user.uid, user));
+		}
+	} while (0);
 
 	fclose(f);
 
 	return true;
 }
 
-void thread_init_cb(evhtp_t * htp, evthr_t * thr, void * arg) {
+void _thread_init_cb(evhtp_t * htp, evthr_t * thr, void * arg) {
 	LOGD("thread_init_cb");
 }
 
-void thread_init_exit(evhtp_t * htp, evthr_t * thr, void * arg) {
+void _thread_init_exit(evhtp_t * htp, evthr_t * thr, void * arg) {
 	LOGD("thread_init_exit");
+}
+
+void _req_cb(evhtp_request_t * req, void * arg) {
+	const char * ver = (const char *) arg;
+
+	evbuffer_add(req->buffer_out, ver, strlen(ver));
+	evhtp_send_reply(req, EVHTP_RES_OK);
 }
 
 int main_server(int argc, char ** argv) {
@@ -77,11 +85,16 @@ int main_server(int argc, char ** argv) {
 	srand((unsigned) time(NULL));
 
 	evbase_t * evbase = NULL;
-	evhtp_t * htp = NULL;
+	evhtp_t * htp_v4 = NULL;
+	evhtp_t * htp_v6 = NULL;
 
 	evbase = event_base_new();
-	htp = evhtp_new(evbase, NULL);
-	evhtp_use_threads_wexit(htp, thread_init_cb, thread_init_exit, 4, NULL);
+
+	htp_v4 = evhtp_new(evbase, NULL);
+	htp_v6 = evhtp_new(evbase, NULL);
+
+	evhtp_use_threads_wexit(htp_v4, _thread_init_cb, _thread_init_exit, 8,
+	NULL);
 
 //	evhtp_t * v1 = evhtp_new(evbase, NULL);
 //	const char* vhost = "host1.com";
@@ -89,38 +102,59 @@ int main_server(int argc, char ** argv) {
 //	evhtp_set_cb(v1, path, vh_testcb, (void*)vhost);
 //	evhtp_add_vhost(htp, vhost, v1);
 
-	evhtp_callback_t * cb_1 = NULL;
-	evhtp_callback_t * cb_2 = NULL;
-	evhtp_callback_t * cb_3 = NULL;
-	evhtp_callback_t * cb_4 = NULL;
-
-	cb_1 = evhtp_set_cb(htp, "/register", registercb, NULL);
-	assert(cb_1 != NULL);
-
-	cb_2 = evhtp_set_cb(htp, "/login", logincb, NULL);
-	assert(cb_2 != NULL);
-
-	cb_3 = evhtp_set_cb(htp, "/test", testcb, NULL);
-	assert(cb_3 != NULL);
-
-	cb_4 = evhtp_set_cb(htp, "/add", addcb, NULL);
-	assert(cb_4 != NULL);
-
-	int r = evhtp_bind_socket(htp, "0.0.0.0", 8006, 1024);
-	if (r != 0) {
-
+	{
+		evhtp_set_gencb(htp_v6, _req_cb, (void *) "ipv6");
+		evhtp_set_gencb(htp_v4, _req_cb, (void *) "ipv4");
 	}
 
-	syncRedis.connect("192.168.204.128", 6379);
+	{
+		evhtp_callback_t * cb_1 = NULL;
+		evhtp_callback_t * cb_2 = NULL;
+		evhtp_callback_t * cb_3 = NULL;
+		evhtp_callback_t * cb_4 = NULL;
+
+		cb_1 = evhtp_set_cb(htp_v4, "/register", registercb, NULL);
+		cb_1 = evhtp_set_cb(htp_v6, "/register", registercb, NULL);
+		assert(cb_1 != NULL);
+
+		cb_2 = evhtp_set_cb(htp_v4, "/login", logincb, NULL);
+		cb_2 = evhtp_set_cb(htp_v6, "/login", logincb, NULL);
+		assert(cb_2 != NULL);
+
+		cb_3 = evhtp_set_cb(htp_v4, "/test", testcb, NULL);
+		cb_3 = evhtp_set_cb(htp_v6, "/test", testcb, NULL);
+		assert(cb_3 != NULL);
+
+		cb_4 = evhtp_set_cb(htp_v4, "/add", addcb, NULL);
+		cb_4 = evhtp_set_cb(htp_v6, "/add", addcb, NULL);
+		assert(cb_4 != NULL);
+	}
+
+	{
+		int r = evhtp_bind_socket(htp_v4, "ipv6:::/128", 8006, 1024);
+		if (r != 0) {
+			LOGD("bind ipv6 fail");
+		}
+	}
+
+	{
+		int r = evhtp_bind_socket(htp_v4, "ipv4:0.0.0.0", 8006, 1024);
+		if (r != 0) {
+			LOGD("bind ipv4 fail");
+		}
+	}
+
+//	syncRedis.connect("192.168.204.128", 6379);
 
 	LOGD("running [port : " << 8006 << "]");
 
-	r = event_base_dispatch(evbase);
+	int r = event_base_dispatch(evbase);
 	if (r != 0) {
 
 	}
 
-	evhtp_unbind_socket(htp);
+	evhtp_unbind_socket(htp_v4);
+	evhtp_unbind_socket(htp_v6);
 
 	event_base_free(evbase);
 

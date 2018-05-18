@@ -30,7 +30,7 @@
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.8.5"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/evhtp_demo/json}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/evhtp_demo/iconv/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/evhtp_demo/src/redis}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1593096336" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -42,7 +42,7 @@
 									<listOptionValue builtIn="false" value="/usr/include/c++/4.8.5"/>
 									<listOptionValue builtIn="false" value="/usr/include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/evhtp_demo/json}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/evhtp_demo/iconv/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/evhtp_demo/src/redis}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1503456054" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -52,9 +52,14 @@
 								<option id="gnu.cpp.link.option.paths.764606127" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false"/>
 								<option id="gnu.cpp.link.option.userobjs.540673723" name="Other objects" superClass="gnu.cpp.link.option.userobjs" useByScannerDiscovery="false" valueType="userObjs">
 									<listOptionValue builtIn="false" value="/usr/local/lib/libevhtp.a"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib/libevent_openssl.a"/>
+									<listOptionValue builtIn="false" value="/usr/lib64/libcrypto.so"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib/libevent_core.a"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib/libhiredis.a"/>
 									<listOptionValue builtIn="false" value="/usr/lib64/libcurl.so.4"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib/liblog4z.a"/>
+									<listOptionValue builtIn="false" value="/usr/lib64/libssl.so"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib/libevent_core.a"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib/libevent_pthreads.a"/>
 									<listOptionValue builtIn="false" value="/usr/local/lib/libevent.a"/>
 								</option>
@@ -68,8 +73,20 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.651599175.1262855084" name="bunissfunc.cpp" rcbsApplicability="disable" resourcePath="src/bunissfunc.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1623278862.2141006740">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1623278862.2141006740" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1623278862">
+							<option id="gnu.cpp.compiler.option.include.paths.891476458" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+								<listOptionValue builtIn="false" value="/usr/local/include/evhtp"/>
+								<listOptionValue builtIn="false" value="/usr/include/c++/4.8.5"/>
+								<listOptionValue builtIn="false" value="/usr/include"/>
+								<listOptionValue builtIn="false" value="&quot;${workspace_loc:/evhtp_demo/json}&quot;"/>
+								<listOptionValue builtIn="false" value="&quot;${workspace_loc:/evhtp_demo/src/redis}&quot;"/>
+							</option>
+							<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1801085600" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+						</tool>
+					</fileInfo>
 					<sourceEntries>
-						<entry excluding="src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="redis|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
@@ -121,7 +138,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="redis|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
@@ -131,21 +148,6 @@
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="libevhttp_demo.cdt.managedbuild.target.gnu.exe.327897482" name="Executable" projectType="cdt.managedbuild.target.gnu.exe"/>
-	</storageModule>
-	<storageModule moduleId="scannerConfiguration">
-		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.651599175;cdt.managedbuild.config.gnu.exe.debug.651599175.;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.813627359;cdt.managedbuild.tool.gnu.c.compiler.input.1503456054">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.1179002514;cdt.managedbuild.config.gnu.exe.release.1179002514.;cdt.managedbuild.tool.gnu.c.compiler.exe.release.265194996;cdt.managedbuild.tool.gnu.c.compiler.input.527716359">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.651599175;cdt.managedbuild.config.gnu.exe.debug.651599175.;cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1623278862;cdt.managedbuild.tool.gnu.cpp.compiler.input.1593096336">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.1179002514;cdt.managedbuild.config.gnu.exe.release.1179002514.;cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.193286223;cdt.managedbuild.tool.gnu.cpp.compiler.input.1800836749">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
@@ -159,5 +161,20 @@
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
 		<buildTargets/>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.1179002514;cdt.managedbuild.config.gnu.exe.release.1179002514.;cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.193286223;cdt.managedbuild.tool.gnu.cpp.compiler.input.1800836749">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.651599175;cdt.managedbuild.config.gnu.exe.debug.651599175.;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.813627359;cdt.managedbuild.tool.gnu.c.compiler.input.1503456054">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.1179002514;cdt.managedbuild.config.gnu.exe.release.1179002514.;cdt.managedbuild.tool.gnu.c.compiler.exe.release.265194996;cdt.managedbuild.tool.gnu.c.compiler.input.527716359">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.651599175;cdt.managedbuild.config.gnu.exe.debug.651599175.;cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1623278862;cdt.managedbuild.tool.gnu.cpp.compiler.input.1593096336">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 	</storageModule>
 </cproject>
