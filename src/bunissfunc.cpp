@@ -106,11 +106,10 @@ void registercb(evhtp_request_t * req, void * args) {
 		evhtp_kvs_for_each(query, printf_kvs, &key_idx);
 	}
 
-	{
-		//evhtp_headers_t* headers = evhttp_request_get_input_headers(req);
-		int key_idx = 0;
-		evhtp_headers_for_each(req->headers_in, printf_kvs, &key_idx);
-	}
+//	{
+//		int key_idx = 0;
+//		evhtp_headers_for_each(req->headers_in, printf_kvs, &key_idx);
+//	}
 
 	std::string username = evhtp_kv_find(query, "username");
 	std::string pasword = evhtp_kv_find(query, "password");
