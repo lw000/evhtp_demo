@@ -26,23 +26,47 @@ static void add_cb(evhtp_request_t * req, void * arg) {
 	ev_ssize_t len = evbuffer_get_length(evbuf);
 	memcpy(buf, evbuffer_pullup(evbuf, len), len);
 	buf[len] = '\0';
-	LOGFMTA("%s", buf);
 	evbuffer_drain(evbuf, len);
+
+	LOGD(buf);
 }
 
-int main_client(int argc, char ** argv) {
+static void fact_cb(evhtp_request_t * req, void * arg) {
+	char buf[1024];
+	struct evbuffer *evbuf = req->buffer_in;
+	ev_ssize_t len = evbuffer_get_length(evbuf);
+	memcpy(buf, evbuffer_pullup(evbuf, len), len);
+	buf[len] = '\0';
+	evbuffer_drain(evbuf, len);
 
-	evhtp_connection_t * conn;
-	evhtp_request_t * request;
+	LOGD(buf);
+}
+
+int main_client(const char* host, int port) {
 	evbase_t * evbase;
 
 	evbase = event_base_new();
 
 	{
-		conn = evhtp_connection_new(evbase, "192.168.204.128", 8080);
+		evhtp_connection_t * conn;
+		evhtp_request_t * request;
+		conn = evhtp_connection_new(evbase, host, port);
 		request = evhtp_request_new(add_cb, evbase);
-		evhtp_make_request(conn, request, htp_method_GET,
-				"/add?a=111&b=222&c=333");
+		evhtp_headers_add_header(request->headers_out, evhtp_header_new("Host", "ieatfood.net", 0, 0));
+		evhtp_headers_add_header(request->headers_out, evhtp_header_new("User-Agent", "libevhtp", 0, 0));
+		evhtp_headers_add_header(request->headers_out, evhtp_header_new("Connection", "close", 0, 0));
+		evhtp_make_request(conn, request, htp_method_GET, "/add?a=111&b=222");
+	}
+
+	{
+		evhtp_connection_t * conn;
+		evhtp_request_t * request;
+		conn = evhtp_connection_new(evbase, host, port);
+		request = evhtp_request_new(fact_cb, evbase);
+		evhtp_headers_add_header(request->headers_out, evhtp_header_new("Host", "ieatfood.net", 0, 0));
+		evhtp_headers_add_header(request->headers_out, evhtp_header_new("User-Agent", "libevhtp", 0, 0));
+		evhtp_headers_add_header(request->headers_out, evhtp_header_new("Connection", "close", 0, 0));
+		evhtp_make_request(conn, request, htp_method_GET, "/fact?v=10");
 	}
 
 	event_base_dispatch(evbase);

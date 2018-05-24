@@ -11,13 +11,11 @@
 #include <evhtp/evhtp.h>
 
 void registercb(evhtp_request_t * req, void * args);
-
 void logincb(evhtp_request_t * req, void * args);
-
 void testcb(evhtp_request_t * req, void * args);
-
 void addcb(evhtp_request_t * req, void * args);
-
+void subcb(evhtp_request_t * req, void * args);
+void factcb(evhtp_request_t * req, void * args);
 void vh_testcb(evhtp_request_t * req, void * args);
 
 

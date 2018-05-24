@@ -31,57 +31,26 @@ long long guid = 10000;
 std::mutex user_table_lock;
 std::mutex user_lock;
 
-class BunissBase {
+class Buniss {
 public:
-	BunissBase() {
-
+	static int add(int a, int b) {
+		return a + b;
 	}
 
-	virtual ~BunissBase() {
-
+	static int sub(int a, int b) {
+		return a - b;
 	}
 
-public:
-	virtual std::string result() {
-		return std::string();
+	static int fact(int v) {
+		if (v == 0) {
+			return 1;
+		}
+		return v * fact(v - 1);
 	}
 };
 
-class AddBuniss: public BunissBase {
-private:
-	int a;
-	int b;
-
-public:
-	AddBuniss() {
-		this->a = 0;
-		this->b = 0;
-	}
-
-	virtual ~AddBuniss() {
-
-	}
-
-public:
-	int add(int a, int b) {
-		this->a = a;
-		this->b = b;
-		return this->a + this->b;
-	}
-
-	virtual std::string result() override {
-
-		return std::string();
-	}
-};
-
-static int printf_kvs(evhtp_kv_t * kvobj, void * arg) {
-	int * key_idx = (int *) arg;
-
+static int dump_kvs(evhtp_kv_t * kvobj, void * arg) {
 	LOGD(kvobj->key << " : " << kvobj->val);
-
-	*key_idx += 1;
-
 	return 0;
 }
 
@@ -92,23 +61,22 @@ int registerAllfunction(evhtp_request_t * req, void * args) {
 
 void registercb(evhtp_request_t * req, void * args) {
 	if (evhtp_request_get_method(req) != htp_method_POST) {
-		evbuffer_add_printf(req->buffer_out, "not support, please use post method");
+		evbuffer_add_printf(req->buffer_out,
+				"not support, please use post method");
 		evhtp_send_reply(req, EVHTP_RES_OK);
 		return;
 	}
 
 	char* raw_query = (char*) req->uri->query_raw;
 	evhtp_query_t * query;
-	query = evhtp_parse_query_wflags(raw_query, strlen(raw_query), 0);
+	query = evhtp_parse_query(raw_query, strlen(raw_query));
 
 	{
-		int key_idx = 0;
-		evhtp_kvs_for_each(query, printf_kvs, &key_idx);
+		evhtp_kvs_for_each(query, dump_kvs, NULL);
 	}
 
 //	{
-//		int key_idx = 0;
-//		evhtp_headers_for_each(req->headers_in, printf_kvs, &key_idx);
+//		evhtp_headers_for_each(req->headers_in, dump_kvs, NULL);
 //	}
 
 	std::string username = evhtp_kv_find(query, "username");
@@ -188,17 +156,17 @@ void registercb(evhtp_request_t * req, void * args) {
 
 void logincb(evhtp_request_t * req, void * args) {
 	if (evhtp_request_get_method(req) != htp_method_POST) {
-		evbuffer_add_printf(req->buffer_out, "not support, please use post method");
+		evbuffer_add_printf(req->buffer_out,
+				"not support, please use post method");
 		evhtp_send_reply(req, EVHTP_RES_OK);
 		return;
 	}
 
 	char* raw_query = (char*) req->uri->query_raw;
 	evhtp_query_t * query;
-	query = evhtp_parse_query_wflags(raw_query, strlen(raw_query), 0);
+	query = evhtp_parse_query(raw_query, strlen(raw_query));
 
-	int key_idx = 0;
-	evhtp_kvs_for_each(query, printf_kvs, &key_idx);
+	evhtp_kvs_for_each(query, dump_kvs, NULL);
 
 	std::string userid = evhtp_kv_find(query, "userid");
 	std::string username = evhtp_kv_find(query, "username");
@@ -329,14 +297,130 @@ void vh_testcb(evhtp_request_t * req, void * args) {
 	evhtp_send_reply(req, EVHTP_RES_OK);
 }
 
-void addcb(evhtp_request_t * req, void * args) {
+void factcb(evhtp_request_t * req, void * args) {
 	evhtp_query_t * query;
 	char* raw_query = (char*) req->uri->query_raw;
-	query = evhtp_parse_query_wflags(raw_query, strlen(raw_query), 0);
+	query = evhtp_parse_query(raw_query, strlen(raw_query));
+
+	evhtp_kvs_for_each(query, dump_kvs, NULL);
+
+	const char* v = evhtp_kv_find(query, "v");
+
+	int iv = atoi(v);
+
+	int result = Buniss::fact(iv);
+
+	rapidjson::Document doc;
+	doc.SetObject();
+	rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
+	doc.AddMember("code", 0, allocator);
+	doc.AddMember("msg", "success", allocator);
+	{
+		rapidjson::Value data;
+		data.SetObject();
+		data.AddMember("result", result, allocator);
+		doc.AddMember("data", data, allocator);
+	}
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+	doc.Accept(writer);
+	std::string msg = buffer.GetString();
+	evbuffer_add_printf(req->buffer_out, msg.c_str());
+	evhtp_send_reply(req, EVHTP_RES_OK);
+
+	LOGD(msg);
+}
+
+void addcb(evhtp_request_t * req, void * args) {
+	evhtp_query_t * query;
+//	char* raw_query = (char*) req->uri->query_raw;
+//	query = evhtp_parse_query(raw_query, strlen(raw_query));
+	query = req->uri->query;
+
+//	{
+//		char buf[1024] = { 0 };
+//		evbuffer_copyout(req->buffer_in, buf, evhtp_request_content_len(req));
+//		buf[evhtp_request_content_len(req)] = '\0';
+//		LOGD(buf);
+//	}
+
+	evhtp_kvs_for_each(query, dump_kvs, NULL);
+
+	const char* a = evhtp_kv_find(query, "a");
+	const char* b = evhtp_kv_find(query, "b");
+	if (a == NULL || b == NULL) {
+		rapidjson::Document doc;
+		doc.SetObject();
+		rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
+		doc.AddMember("code", -1, allocator);
+		doc.AddMember("msg", "parameter deletion", allocator);
+		{
+			rapidjson::Value data;
+			data.SetObject();
+			doc.AddMember("data", data, allocator);
+		}
+		rapidjson::StringBuffer buffer;
+		rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+		doc.Accept(writer);
+		std::string msg = buffer.GetString();
+		evbuffer_add_printf(req->buffer_out, msg.c_str());
+		evhtp_send_reply(req, EVHTP_RES_OK);
+		LOGD(msg);
+		return;
+	}
+
+	int ia = atoi(a);
+	int ib = atoi(b);
+	int result = Buniss::add(ia, ib);
+
+	rapidjson::Document doc;
+	doc.SetObject();
+	rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
+	doc.AddMember("code", 0, allocator);
+	doc.AddMember("msg", "success", allocator);
+	{
+		rapidjson::Value data;
+		data.SetObject();
+//		{
+//			rapidjson::Value args;
+//			args.SetArray();
+//			{
+//				rapidjson::Value vk;
+//				vk.SetObject();
+//				vk.AddMember("a", ia, allocator);
+//				args.PushBack(vk, allocator);
+//			}
+//			{
+//				rapidjson::Value vk;
+//				vk.SetObject();
+//				vk.AddMember("b", ib, allocator);
+//				args.PushBack(vk, allocator);
+//			}
+////			args.PushBack(ia, allocator);
+////			args.PushBack(ib, allocator);
+//			data.AddMember("args", args, allocator);
+//		}
+		data.AddMember("result", result, allocator);
+		doc.AddMember("data", data, allocator);
+	}
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+	doc.Accept(writer);
+	std::string msg = buffer.GetString();
+	evbuffer_add_printf(req->buffer_out, msg.c_str());
+	evhtp_send_reply(req, EVHTP_RES_OK);
+
+	LOGD(msg);
+}
+
+void subcb(evhtp_request_t * req, void * args) {
+	evhtp_query_t * query;
+	char* raw_query = (char*) req->uri->query_raw;
+	query = evhtp_parse_query(raw_query, strlen(raw_query));
 
 	{
 		int key_idx = 0;
-		evhtp_kvs_for_each(query, printf_kvs, &key_idx);
+		evhtp_kvs_for_each(query, dump_kvs, &key_idx);
 	}
 
 	const char* a = evhtp_kv_find(query, "a");
@@ -364,7 +448,7 @@ void addcb(evhtp_request_t * req, void * args) {
 	int ia = atoi(a);
 	int ib = atoi(b);
 
-	int ic = ia + ib;
+	int ic = Buniss::sub(ia, ib);
 
 	rapidjson::Document doc;
 	doc.SetObject();
@@ -374,25 +458,25 @@ void addcb(evhtp_request_t * req, void * args) {
 	{
 		rapidjson::Value data;
 		data.SetObject();
-		{
-			rapidjson::Value args;
-			args.SetArray();
-			{
-				rapidjson::Value vk;
-				vk.SetObject();
-				vk.AddMember("a", ia, allocator);
-				args.PushBack(vk, allocator);
-			}
-			{
-				rapidjson::Value vk;
-				vk.SetObject();
-				vk.AddMember("b", ib, allocator);
-				args.PushBack(vk, allocator);
-			}
-//			args.PushBack(ia, allocator);
-//			args.PushBack(ib, allocator);
-			data.AddMember("args", args, allocator);
-		}
+//		{
+//			rapidjson::Value args;
+//			args.SetArray();
+//			{
+//				rapidjson::Value vk;
+//				vk.SetObject();
+//				vk.AddMember("a", ia, allocator);
+//				args.PushBack(vk, allocator);
+//			}
+//			{
+//				rapidjson::Value vk;
+//				vk.SetObject();
+//				vk.AddMember("b", ib, allocator);
+//				args.PushBack(vk, allocator);
+//			}
+////			args.PushBack(ia, allocator);
+////			args.PushBack(ib, allocator);
+//			data.AddMember("args", args, allocator);
+//		}
 		data.AddMember("result", ic, allocator);
 		doc.AddMember("data", data, allocator);
 	}

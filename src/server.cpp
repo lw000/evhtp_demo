@@ -77,7 +77,7 @@ void _req_cb(evhtp_request_t * req, void * arg) {
 	evhtp_send_reply(req, EVHTP_RES_OK);
 }
 
-int main_server(int argc, char ** argv) {
+int main_server(int port) {
 	if (!load_config()) {
 		return -1;
 	}
@@ -112,6 +112,7 @@ int main_server(int argc, char ** argv) {
 		evhtp_callback_t * cb_2 = NULL;
 		evhtp_callback_t * cb_3 = NULL;
 		evhtp_callback_t * cb_4 = NULL;
+		evhtp_callback_t * cb_5 = NULL;
 
 		cb_1 = evhtp_set_cb(htp_v4, "/register", registercb, NULL);
 		cb_1 = evhtp_set_cb(htp_v6, "/register", registercb, NULL);
@@ -128,30 +129,40 @@ int main_server(int argc, char ** argv) {
 		cb_4 = evhtp_set_cb(htp_v4, "/add", addcb, NULL);
 		cb_4 = evhtp_set_cb(htp_v6, "/add", addcb, NULL);
 		assert(cb_4 != NULL);
+
+		cb_5 = evhtp_set_cb(htp_v4, "/fact", factcb, NULL);
+		cb_5 = evhtp_set_cb(htp_v6, "/fact", factcb, NULL);
+		assert(cb_5 != NULL);
 	}
 
-	{
-		int r = evhtp_bind_socket(htp_v4, "ipv6:::/128", 8006, 1024);
-		if (r != 0) {
-			LOGD("bind ipv6 fail");
+	do {
+		{
+			int r = evhtp_bind_socket(htp_v4, "ipv6:::/128", port, 1024);
+			if (r != 0) {
+				LOGD("bind ipv6 fail");
+				break;
+			}
 		}
-	}
 
-	{
-		int r = evhtp_bind_socket(htp_v4, "ipv4:0.0.0.0", 8006, 1024);
-		if (r != 0) {
-			LOGD("bind ipv4 fail");
+		{
+			int r = evhtp_bind_socket(htp_v4, "ipv4:0.0.0.0", port, 1024);
+			if (r != 0) {
+				LOGD("bind ipv4 fail");
+				break;
+			}
 		}
-	}
 
-//	syncRedis.connect("192.168.204.128", 6379);
+		//	syncRedis.connect("192.168.204.128", 6379);
 
-	LOGD("running [port : " << 8006 << "]");
+		LOGD("running [port : " << port << "]");
 
-	int r = event_base_dispatch(evbase);
-	if (r != 0) {
+		int r = event_base_dispatch(evbase);
+		if (r != 0) {
+			LOGD("event_base_dispatch fail [" << r << "]");
+			break;
+		}
 
-	}
+	} while (0);
 
 	evhtp_unbind_socket(htp_v4);
 	evhtp_unbind_socket(htp_v6);
